@@ -1,4 +1,5 @@
 import json
+import gensim
 import torch
 from transformers import AutoModelForCausalLM
 from faiss import read_index
