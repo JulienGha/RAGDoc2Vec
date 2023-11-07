@@ -12,7 +12,7 @@ def train_doc2vec(tagged_data):
 
 if __name__ == "__main__":
     # Load preprocessed documents
-    processed_docs = preprocess_data(load_data('../data/documents.json'))
+    processed_docs = preprocess_data(load_data('../data/raw/translations.json'))
 
     # Train and save Doc2Vec model
     doc2vec_model = train_doc2vec(processed_docs)

@@ -12,7 +12,7 @@ def generate_response(context):
 if __name__ == "__main__":
     # These are placeholders for context.
     # You'd replace this with actual data in practice.
-    context = "France is a country in Europe that is well known for its history and culture. The capital city of France is"
+    context = "what should my children gets when I die?"
 
     response = generate_response(context)
     print(f"Generated response: {response}")

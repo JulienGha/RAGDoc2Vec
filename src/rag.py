@@ -1,4 +1,4 @@
-from doc2vec_train import train_doc2vec
+from doc2vec import train_doc2vec
 from preprocess import preprocess_data, load_data
 from retrieve import retrieve_documents
 from generate import generate_response
