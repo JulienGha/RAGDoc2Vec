@@ -1,25 +1,19 @@
-import gensim
+import json
+from gensim.models import Doc2Vec
+from preprocess import load_data, preprocess_data
 
-# Load your text data
-text_data = []
-with open("my_text_data.txt", "r") as f:
-    for line in f:
-        text_data.append(line)
 
-# Create a Doc2Vec model
-model = gensim.models.Doc2Vec(text_data, vector_size=128, window=8, min_count=5)
+def train_doc2vec(tagged_data):
+    model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
+    model.build_vocab(tagged_data)
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+    return model
 
-# Save the model
-model.save("my_doc2vec_model.bin")
 
-import faiss
+if __name__ == "__main__":
+    # Load preprocessed documents
+    processed_docs = preprocess_data(load_data('../data/documents.json'))
 
-# Load the Doc2Vec model
-model = gensim.models.Doc2Vec.load("my_doc2vec_model.bin")
-
-# Create a FAISS index of the Doc2Vec embeddings
-index = faiss.IndexFlatIP(128)
-index.add(model.docvecs.vectors_norm)
-
-# Save the index
-index.save("my_rag_retriever.idx")
+    # Train and save Doc2Vec model
+    doc2vec_model = train_doc2vec(processed_docs)
+    doc2vec_model.save("../models/doc2vec_model.bin")
