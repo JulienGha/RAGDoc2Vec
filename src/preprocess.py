@@ -13,8 +13,8 @@ def load_data(file_path):
     return data
 
 
-# Load the JSON data from file
-with open('../data/quran_en.json', 'r', encoding='utf-8') as file:
+"""# Load the JSON data from file
+with open('../data/raw/quran_en.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Extract translations with their IDs
@@ -28,12 +28,12 @@ for surah in data:
         }
         translations.append(translation_entry)
 # Write translations to a file
-with open('data/translations.json', 'w', encoding='utf-8') as file:
+with open('../data/processed/translations.json', 'w', encoding='utf-8') as file:
     json.dump(translations, file, ensure_ascii=False, indent=4)
 
 # Print translations or write them to a file
 for entry in translations:
-    print(f"Surah ID: {entry['surah_id']}, Verse ID: {entry['verse_id']}, Translation: {entry['translation']}")
+    print(f"Surah ID: {entry['surah_id']}, Verse ID: {entry['verse_id']}, Translation: {entry['translation']}")"""
 
 
 if __name__ == "__main__":
