@@ -14,7 +14,7 @@ def load_data(file_path):
 
 
 # Load the JSON data from file
-with open('data/quran_en.json', 'r', encoding='utf-8') as file:
+with open('../data/quran_en.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Extract translations with their IDs
