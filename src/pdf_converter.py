@@ -33,7 +33,7 @@ def convert_pdf_into_json(file):
     json_object = json.dumps(text)
 
     # Save the JSON object to a file
-    with open('../data/processed/' + file + '.json', 'w') as f:
+    with open('../data/raw/' + file + '.json', 'w') as f:
         f.write(json_object)
 
 
@@ -51,6 +51,3 @@ def turn_json_into_csv(file, output="default.csv"):
         writer.writeheader()
         for row in data:
             writer.writerow(row)
-
-
-convert_pdf_into_json("cognitive_neuropsycho_schizo")
