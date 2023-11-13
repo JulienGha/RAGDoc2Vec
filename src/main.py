@@ -7,9 +7,9 @@ from generate import generate_response  # Import the generate_response function
 import os
 
 
-def main():
+def main(file):
     model_path = "../models/doc2vec_model.bin"
-    data_path = '../data/raw/translations.json'  # Adjust the path to where your data is
+    data_path = '../data/processed/' + file + '.json'  # Adjust the path to where your data is
 
     # Load and preprocess the data
     preprocessed_data = preprocess_data(load_data(data_path))

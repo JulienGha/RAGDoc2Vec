@@ -7,3 +7,5 @@ models/
 data/raw/
 /models/
 /data/raw/
+/data/processed/
+data/processed/
