@@ -11,32 +11,44 @@ import os
 def main(files):
 
     model_path = "../models/doc2vec_model.bin"
-    list_doc = []
-    for file in files:
-        convert_pdf_into_json(file)
-        processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'))
-        with open('../data/processed/' + file + '.json', "w") as file_p:
-            json.dump([doc.words for doc in processed_docs], file_p)
-        for string in processed_docs:
-            list_doc.append(string)
+    # Process documents if files are provided
+    if files:
+        list_doc = []
+        for file in files:
+            convert_pdf_into_json(file)
+            processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'), custom_tags=True)
+            with open('../data/processed/' + file + '.json', "w") as file_p:
+                json.dump([{"words": doc.words, "tags": doc.tags} for doc in processed_docs], file_p)
+            list_doc.extend(processed_docs)
 
     # Ask the user if they want to train a new model
     train_new_model = input("Do you want to train a new model? (yes/no): ").strip().lower()
     if train_new_model == 'yes':
         model_choice = ""
-        while model_choice != "doc" or model_choice != "bert":
-            model_choice = input("Do you want doc2vec or BERT? (doc/bert): ").strip().lower()
-            if model_choice == "doc":
-                # Train the Doc2Vec model
-                model = train_doc2vec(list_doc)
-                # Save the model for future use
-                model.save(model_path)
-            elif model_choice == "bert":
-                # Train the Doc2Vec model
-                model = train_doc2vec(list_doc)
-                # Save the model for future use
-                model_path = "../models/bert_model.bin"
-                model.save(model_path)
+        if files:
+            list_doc = []
+            for file in files:
+                convert_pdf_into_json(file)
+                processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'))
+                with open('../data/processed/' + file + '.json', "w") as file_p:
+                    json.dump([doc.words for doc in processed_docs], file_p)
+                for string in processed_docs:
+                    list_doc.append(string)
+            while model_choice != "doc" or model_choice != "bert":
+                model_choice = input("Do you want doc2vec or BERT? (doc/bert): ").strip().lower()
+                if model_choice == "doc":
+                    # Train the Doc2Vec model
+                    model = train_doc2vec(list_doc)
+                    # Save the model for future use
+                    model.save(model_path)
+                elif model_choice == "bert":
+                    # Train the Doc2Vec model
+                    model = train_doc2vec(list_doc)
+                    # Save the model for future use
+                    model_path = "../models/bert_model.bin"
+                    model.save(model_path)
+        else:
+            print("can train a model with no files detected or in input")
     elif train_new_model == "no" and os.path.exists(model_path):
         # Load an existing model
         model = Doc2Vec.load(model_path)

@@ -3,16 +3,26 @@ from nltk.tokenize import word_tokenize
 from gensim.models.doc2vec import TaggedDocument
 
 
-def preprocess_data_pdf_to_json(document):
+def preprocess_data_pdf_to_json(document, tags=""):
     tagged_documents = []
-    i = 0
-    for entry in document:
-        for data in entry:
-            if data:
-                text = data
-                words = word_tokenize(text.lower())
-                tagged_documents.append(TaggedDocument(words=words, tags=[i]))
-                i = i+1
+    if tags == "":
+        i = 0
+        for entry in document:
+            for data in entry:
+                if data:
+                    text = data
+                    words = word_tokenize(text.lower())
+                    tagged_documents.append(TaggedDocument(words=words, tags=[i]))
+                    i = i+1
+    else:
+        i = 0
+        for entry in document:
+            for data in entry:
+                if data:
+                    text = data
+                    words = word_tokenize(text.lower())
+                    tagged_documents.append(TaggedDocument(words=words, tags=[i]))
+                    i = i + 1
     return tagged_documents
 
 
