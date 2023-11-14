@@ -21,7 +21,7 @@ def preprocess_data_pdf_to_json(document, tags=""):
                 if data:
                     text = data
                     words = word_tokenize(text.lower())
-                    tagged_documents.append(TaggedDocument(words=words, tags=[i]))
+                    tagged_documents.append(TaggedDocument(words=words, tags=[tags + str(i)]))
                     i = i + 1
     return tagged_documents
 

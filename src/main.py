@@ -4,6 +4,7 @@ from pdf_converter import convert_pdf_into_json
 from preprocess import preprocess_data_pdf_to_json, load_data
 from retrieve import retrieve_documents
 from doc2vec import train_doc2vec
+from faiss import create_vector_db
 from generate import generate_response  # Import the generate_response function
 import os
 
@@ -16,7 +17,7 @@ def main(files):
         list_doc = []
         for file in files:
             convert_pdf_into_json(file)
-            processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'), custom_tags=True)
+            processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'), "file")
             with open('../data/processed/' + file + '.json', "w") as file_p:
                 json.dump([{"words": doc.words, "tags": doc.tags} for doc in processed_docs], file_p)
             list_doc.extend(processed_docs)
@@ -34,8 +35,8 @@ def main(files):
                     json.dump([doc.words for doc in processed_docs], file_p)
                 for string in processed_docs:
                     list_doc.append(string)
-            while model_choice != "doc" or model_choice != "bert":
-                model_choice = input("Do you want doc2vec or BERT? (doc/bert): ").strip().lower()
+            while model_choice != "doc" or model_choice != "bert" or model_choice != "faiss":
+                model_choice = input("Do you want doc2vec, BERT or faiss? (doc/bert/faiss): ").strip().lower()
                 if model_choice == "doc":
                     # Train the Doc2Vec model
                     model = train_doc2vec(list_doc)
@@ -47,6 +48,9 @@ def main(files):
                     # Save the model for future use
                     model_path = "../models/bert_model.bin"
                     model.save(model_path)
+                elif model_choice == "faiss":
+                    model = create_vector_db(list_doc)
+                    model_path = "../model/faiss_db"
         else:
             print("can train a model with no files detected or in input")
     elif train_new_model == "no" and os.path.exists(model_path):
