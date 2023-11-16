@@ -5,6 +5,7 @@ from preprocess import preprocess_data_pdf_to_json, load_data
 from doc2vec import train_doc2vec, retrieve_documents_doc2vec
 from faiss import create_vector_db
 from generate import generate_response  # Import the generate_response function
+from bert import retrieve_documents_bert, train_bert_model, save_bert_model, load_bert_model
 import os
 
 
@@ -35,11 +36,13 @@ def main(files):
                     # Save the model for future use
                     model.save(model_path)
                 elif model_choice == "bert":
-                    # Train the Doc2Vec model
-                    model = train_doc2vec(list_doc)
+                    # Train the BERT model and get encoded documents
+                    documents = [" ".join(doc.words) for doc in list_doc]
+                    encoded_docs = train_bert_model(documents)
                     # Save the model for future use
-                    model_path = "../models/bert/bert_model.bin"
-                    model.save(model_path)
+                    with open('../models/bert/last_file.json', "w") as file_p:
+                        json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
+                    save_bert_model(encoded_docs)
                 elif model_choice == "faiss":
                     create_vector_db(list_files)
                     model = "../models/faiss_db"
@@ -58,10 +61,12 @@ def main(files):
                         print("this model doesnt exist, plz train a new one")
                         break
                 elif model_choice == "bert":
-                    model_path = "../models/bert/bert_model.bin"
+                    model_path = "../models/bert/bert_model.pkl"
                     if os.path.exists(model_path):
                         # Load an existing model
-                        model = Doc2Vec.load(model_path)
+                        encoded_docs = load_bert_model()
+                        with open('../models/bert/last_file.json', 'r') as file:
+                            list_doc = json.load(file)
                     else:
                         print("this model doesnt exist, plz train a new one")
                         break
@@ -88,10 +93,13 @@ def main(files):
                     print("this model doesnt exist, plz train a new one")
                     break
             elif model_choice == "bert":
-                model_path = "../models/bert/bert_model.bin"
+                model_path = "../models/bert/bert_model.pkl"
                 if os.path.exists(model_path):
                     # Load an existing model
-                    model = Doc2Vec.load(model_path)
+                    # Load the encoded documents
+                    encoded_docs = load_bert_model()
+                    with open('../models/bert/last_file.json', 'r') as file:
+                        list_doc = json.load(file)
                 else:
                     print("this model doesnt exist, plz train a new one")
                     break
@@ -112,12 +120,15 @@ def main(files):
         query = input("Enter your query (or 'exit' to quit): ").strip()
         if query.lower() == 'exit':
             break
-
-        # Preprocess and infer the query vector
-        query_vector = model.infer_vector(query.split())
-
-        # Retrieve documents and their contents using the trained model
-        retrieved_docs = retrieve_documents_doc2vec(model_choice, query_vector, documents)
+        if model_choice == "doc":
+            # Preprocess and infer the query vector
+            query_vector = model.infer_vector(query.split())
+            # Retrieve documents and their contents using the trained model
+            retrieved_docs = retrieve_documents_doc2vec(model_choice, query_vector, documents)
+        elif model_choice == "bert":
+            retrieved_docs = retrieve_documents_bert(query, encoded_docs, documents)
+        elif model_choice == "faiss":
+            return
 
         # Concatenate documents content to form the context for generation
         context = " ".join([content for _, content in retrieved_docs])

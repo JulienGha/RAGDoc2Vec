@@ -30,7 +30,3 @@ def retrieve_documents_doc2vec(model_choice, query_vector, documents, topn=5):
         related_documents = [(idx, documents[idx]) for idx in related_doc_indices]
         print(related_documents)
         return related_documents
-
-
-
-

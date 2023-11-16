@@ -3,7 +3,7 @@ from nltk.tokenize import word_tokenize
 from gensim.models.doc2vec import TaggedDocument
 
 
-def preprocess_data_pdf_to_json(document, tags=""):
+def preprocess_data_pdf_to_json(document, tags="file"):
     tagged_documents = []
     if tags == "":
         i = 0
