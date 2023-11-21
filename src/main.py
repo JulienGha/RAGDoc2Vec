@@ -2,10 +2,12 @@ import json
 from gensim.models import Doc2Vec
 from pdf_converter import convert_pdf_into_json
 from preprocess import preprocess_data_pdf_to_json, load_data
-from doc2vec import train_doc2vec, retrieve_documents_doc2vec
+from retriever import retrieve_documents_doc2vec, retrieve_documents_bert
+from doc2vec import train_doc2vec
+from bert import train_bert_model, save_bert_model, load_bert_model
 from faiss import create_vector_db
-from generate import generate_response  # Import the generate_response function
-from bert import retrieve_documents_bert, train_bert_model, save_bert_model, load_bert_model
+from prompt_optimizer import prompt_opti
+from generate import generate_response
 import os
 
 
@@ -18,7 +20,7 @@ def main(files):
             list_doc = []
             list_files = []
             for file in files:
-                list_files.append('../data/raw/' + file + '.pdf')
+                list_files.append('../data/pdf/' + file + '.pdf')
                 convert_pdf_into_json(file)
                 processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'), file)
                 list_doc.extend(processed_docs)
@@ -44,7 +46,7 @@ def main(files):
                         json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
                     save_bert_model(encoded_docs)
                 elif model_choice == "faiss":
-                    create_vector_db(list_files)
+                    create_vector_db()
                     model = "../models/faiss_db"
         elif train_new_model == "no":
             model_choice = ""
@@ -120,18 +122,21 @@ def main(files):
         query = input("Enter your query (or 'exit' to quit): ").strip()
         if query.lower() == 'exit':
             break
+        optimized_query = prompt_opti(query)
         if model_choice == "doc":
             # Preprocess and infer the query vector
-            query_vector = model.infer_vector(query.split())
+            query_vector = model.infer_vector(optimized_query.split())
             # Retrieve documents and their contents using the trained model
             retrieved_docs = retrieve_documents_doc2vec(model_choice, query_vector, documents)
         elif model_choice == "bert":
-            retrieved_docs = retrieve_documents_bert(query, encoded_docs, documents)
+            retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
         elif model_choice == "faiss":
             return
 
         # Concatenate documents content to form the context for generation
         context = " ".join([content for _, content in retrieved_docs])
+
+        print(context)
 
         # Generate a response using the context
         response = generate_response(context)

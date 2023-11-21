@@ -5,7 +5,7 @@ import PyPDF2
 
 def convert_pdf_into_json(file):
     # Open the PDF file in input
-    pdf = open('../data/raw/' + file + '.pdf', "rb")
+    pdf = open('../data/pdf/' + file + '.pdf', "rb")
 
     # Create a PDF reader object
     reader = PyPDF2.PdfReader(pdf)
