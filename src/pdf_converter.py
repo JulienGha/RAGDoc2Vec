@@ -1,6 +1,12 @@
 import json
 import csv
 import PyPDF2
+from nltk import sent_tokenize
+
+
+def ml_based_sentence_segmentation(words):
+    sentences = sent_tokenize(' '.join(words))
+    return sentences
 
 
 def convert_pdf_into_json(file):
@@ -25,17 +31,31 @@ def convert_pdf_into_json(file):
     # Close the PDF file
     pdf.close()
 
+    whole_text = ""
+
     # Split the text into lists of strings
     for i in range(num_pages):
-        text[i] = text[i].split("\n")
+        whole_text += text[i]
+
+    whole_text = whole_text.replace("\n", "")
+    final_text = []
+    line = ""
+    for char in whole_text:
+        if char in [".", "?", "!"]:
+            final_text.append(line)
+            line = ""
+        else:
+            line += char
+    if line:
+        final_text.append(line)
+    print(final_text)
 
     # Create a JSON object from the list of lists of strings
-    json_object = json.dumps(text)
+    json_object = json.dumps(final_text)
 
     # Save the JSON object to a file
     with open('../data/raw/' + file + '.json', 'w') as f:
         f.write(json_object)
-
 
 def turn_json_into_csv(file, output="default.csv"):
     # Load JSON data
@@ -51,3 +71,6 @@ def turn_json_into_csv(file, output="default.csv"):
         writer.writeheader()
         for row in data:
             writer.writerow(row)
+
+
+

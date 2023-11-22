@@ -23,4 +23,4 @@ def prompt_opti(prompt):
     return answer_text
 
 
-prompt_opti("define hallucination")
+# prompt_opti("define hallucination")
