@@ -19,8 +19,17 @@ def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
     similarities = cosine_similarity([query_vector], encoded_docs).flatten()
     related_doc_indices = similarities.argsort()[-topn:][::-1]
 
+
+    surrounding_docs_idx = []
     # Fetch the actual documents using the indices
-    related_documents = [(idx, documents[idx]) for idx in related_doc_indices]
+    for idx in related_doc_indices:
+        if idx > 0:
+            surrounding_docs_idx.append(idx - 1)
+        surrounding_docs_idx.append(idx)
+        if idx < len(documents) - 1:
+            surrounding_docs_idx.append(idx + 1)
+    # Fetch the actual documents using the indices
+    related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print(related_documents)
     return related_documents
 
@@ -33,7 +42,15 @@ def retrieve_documents_doc2vec(query_vector, documents, topn=5):
     similarities = cosine_similarity([query_vector], doc_vectors).flatten()
     related_doc_indices = similarities.argsort()[-topn:][::-1]
 
+    surrounding_docs_idx = []
     # Fetch the actual documents using the indices
-    related_documents = [(idx, documents[idx]) for idx in related_doc_indices]
+    for idx in related_doc_indices:
+        if idx > 0:
+            surrounding_docs_idx.append(idx - 1)
+        surrounding_docs_idx.append(idx)
+        if idx < len(documents) - 1:
+            surrounding_docs_idx.append(idx + 1)
+    # Fetch the actual documents using the indices
+    related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print(related_documents)
     return related_documents
