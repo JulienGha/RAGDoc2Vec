@@ -42,13 +42,12 @@ def convert_pdf_into_json(file):
     line = ""
     for char in whole_text:
         if char in [".", "?", "!"]:
-            final_text.append(line)
+            final_text.append([line])
             line = ""
         else:
             line += char
     if line:
-        final_text.append(line)
-    print(final_text)
+        final_text.append([line])
 
     # Create a JSON object from the list of lists of strings
     json_object = json.dumps(final_text)
@@ -56,6 +55,7 @@ def convert_pdf_into_json(file):
     # Save the JSON object to a file
     with open('../data/raw/' + file + '.json', 'w') as f:
         f.write(json_object)
+
 
 def turn_json_into_csv(file, output="default.csv"):
     # Load JSON data

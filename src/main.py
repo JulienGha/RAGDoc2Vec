@@ -124,10 +124,12 @@ def main(files):
             break
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
-            # Preprocess and infer the query vector
-            query_vector = model.infer_vector(optimized_query.split())
-            # Retrieve documents and their contents using the trained model
-            retrieved_docs = retrieve_documents_doc2vec(model_choice, query_vector, documents)
+            # Ensure optimized_query is in the correct format
+            # If optimized_query is a string, split it into words
+            query_words = optimized_query.split()
+            query_vector = model.infer_vector(query_words)
+
+            retrieved_docs = retrieve_documents_doc2vec(query_vector, documents)
         elif model_choice == "bert":
             retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
         elif model_choice == "faiss":
@@ -135,8 +137,6 @@ def main(files):
 
         # Concatenate documents content to form the context for generation
         context = " ".join([content for _, content in retrieved_docs])
-
-        print(context)
 
         # Generate a response using the context
         response = generate_response(context)

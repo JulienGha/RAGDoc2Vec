@@ -20,7 +20,7 @@ def prompt_opti(prompt):
     print(f"Original Prompt: {prompt}")
     print(f"Optimized Query: {optimized_query_text}")
     print(f"Generated Answer: {answer_text}")
-    return answer_text
+    return optimized_query_text
 
 
 # prompt_opti("define hallucination")
