@@ -41,7 +41,7 @@ def convert_pdf_into_json(file):
     final_text = []
     line = ""
     for char in whole_text:
-        if char in [".", "?", "!"]:
+        if char in [".", "!"]:
             final_text.append([line])
             line = ""
         else:

@@ -8,3 +8,5 @@ langchain
 pypdf
 sentence-transformers
 faiss-cpu
+request
+

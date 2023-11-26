@@ -19,7 +19,6 @@ def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
     similarities = cosine_similarity([query_vector], encoded_docs).flatten()
     related_doc_indices = similarities.argsort()[-topn:][::-1]
 
-
     surrounding_docs_idx = []
     # Fetch the actual documents using the indices
     for idx in related_doc_indices:
