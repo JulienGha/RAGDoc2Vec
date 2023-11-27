@@ -144,20 +144,34 @@ def main(files):
             break
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
-            query_words = optimized_query.split()
-            query_vector = model.infer_vector(query_words)
-            retrieved_docs = retrieve_documents_doc2vec(query_vector, documents)
+            query_words1 = optimized_query[1].split()
+            query_vector1 = model.infer_vector(query_words1)
+            retrieved_docs1 = retrieve_documents_doc2vec(query_vector1, documents)
+            query_words2 = optimized_query[0].split()
+            query_vector2 = model.infer_vector(query_words2)
+            retrieved_docs2 = retrieve_documents_doc2vec(query_vector2, documents)
         elif model_choice == "bert":
-            retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
+            retrieved_docs1 = retrieve_documents_bert(optimized_query[1], encoded_docs, documents)
+            retrieved_docs2 = retrieve_documents_bert(optimized_query[0], encoded_docs, documents)
         elif model_choice == "faiss":
             return
 
         # Concatenate documents content to form the context for generation
-        context = " ".join([content for _, content in retrieved_docs])
-        print(context)
+        context1 = " ".join([content for _, content in retrieved_docs1])
+        print(context1)
+        context2 = " ".join([content for _, content in retrieved_docs2])
+        print(context2)
 
-        # Generate a response using the context
-        response = generate_response(context, query)
+        print("Answer without RAG: ")
+        response = generate_response("", query)
+        print(f"Generated response: {response}")
+
+        print("Answer with one query optimization: ")
+        response = generate_response(context1, query)
+        print(f"Generated response: {response}")
+
+        print("Answer with 2 query optimization: ")
+        response = generate_response(context2, query)
         print(f"Generated response: {response}")
 
 

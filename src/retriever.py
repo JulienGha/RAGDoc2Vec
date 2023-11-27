@@ -35,7 +35,7 @@ def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
-    print(related_documents)
+    print(f"The found document are: {related_documents}")
     return related_documents
 
 
@@ -60,5 +60,5 @@ def retrieve_documents_doc2vec(query_vector, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
-    print(related_documents)
+    print(f"The found document are: {related_documents}")
     return related_documents

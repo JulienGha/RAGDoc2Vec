@@ -29,7 +29,7 @@ print("Language tokenizer loaded successfully!")
 def prompt_opti(prompt):
     """This function optimize our initial prompt into a document that is likely to be found with a similar content"""
 
-    print("Prompt being optimized...")
+    print("Step 1/3: prompt is being optimized...")
 
     # Step 1: Optimize the query
     system_message = "You are Orca, an AI language model created by Microsoft. You are a cautious assistant. " \
@@ -45,7 +45,8 @@ def prompt_opti(prompt):
 
     print(optimized_query_text)
 
-    print("Step 1/2 over, processing step 2/2...")
+    print("Step 1/3 over")
+    print("Processing step 2/3: answering optimized query...")
 
     # Step 2: Answer the query
     system_message = "You are Orca, an AI language model created by Microsoft. You are a cautious assistant. " \
@@ -53,8 +54,7 @@ def prompt_opti(prompt):
                      "guidelines and promote positive behavior. Your purpose is to assist me with experimental of " \
                      "Retrieval Augmented Generation."
     input_text = f"<|im_start|>system\n{system_message}" \
-                 f"<|im_end|>\n<|im_start|>user\nAnswer the following with content that could be find in a document" \
-                 f"that answers it:{optimized_query_text}" \
+                 f"<|im_end|>\n<|im_start|>user\nAnswer the following query :{optimized_query_text}" \
                  f"<|im_end|>\n<|im_start|>assistant"
     inputs = tokenizer(input_text, return_tensors='pt')
     output_ids = model.generate(inputs["input_ids"], )
@@ -62,37 +62,40 @@ def prompt_opti(prompt):
 
     print(answer_text)
 
-    print("Step 2/2 over")
+    print("Step 2/3 over")
+    print("Processing step 3/3, generating a single query for comparison...")
 
-    return answer_text
+    # Step 3: Answer the query
+    system_message = "You are Orca, an AI language model created by Microsoft. You are a cautious assistant. " \
+                     "You carefully follow instructions. You are helpful and harmless and you follow ethical " \
+                     "guidelines and promote positive behavior. Your purpose is to assist me with experimental of " \
+                     "Retrieval Augmented Generation."
+    input_text = f"<|im_start|>system\n{system_message}" \
+                 f"<|im_end|>\n<|im_start|>user\n" \
+                 f"I want you to answer this {prompt} with an answer that could be found in a document " \
+                 f"talking about the subject of that last. I will perform retrieval augmented generation with it." \
+                 f"<|im_end|>\n<|im_start|>assistant"
+    inputs = tokenizer(input_text, return_tensors='pt')
+    output_ids = model.generate(inputs["input_ids"], )
+    one_answer_text = tokenizer.batch_decode(output_ids)[0]
+
+    print(one_answer_text)
+    print("Step 3/3 over")
+
+    return [answer_text, one_answer_text]
 
 
 def generate_response(context, query):
 
-    print("Starting answer generation's based on query...")
+    print("Starting answer's generation...")
 
     system_message = "You are Orca, an AI language model created by Microsoft. You are a cautious assistant. " \
                      "You carefully follow instructions. You are helpful and harmless and you follow ethical " \
                      "guidelines and promote positive behavior. Your purpose is to assist me with experimental of " \
                      "Retrieval Augmented Generation."
+
     input_text = f"<|im_start|>system\n{system_message}" \
                  f"<|im_end|>\n<|im_start|>user\nAnswer the following:{query} " \
-                 f"<|im_end|>\n<|im_start|>assistant"
-    inputs = tokenizer(input_text, return_tensors='pt')
-    output_ids = model.generate(inputs["input_ids"], )
-    answer = tokenizer.batch_decode(output_ids)[0]
-
-    print("Answer without RAG" + answer)
-
-    print("Starting answer generation based on query and context...")
-
-    system_message = "You are Orca, an AI language model created by Microsoft. You are a cautious assistant. " \
-                     "You carefully follow instructions. You are helpful and harmless and you follow ethical " \
-                     "guidelines and promote positive behavior. Your purpose is to assist me with experimental of " \
-                     "Retrieval Augmented Generation."
-
-    input_text = f"<|im_start|>system\n{system_message}" \
-                    f"<|im_end|>\n<|im_start|>user\nAnswer the following:{query} " \
                  f"using those information as a context:{context}" \
                  f"<|im_end|>\n<|im_start|>assistant"
 
