@@ -1,11 +1,8 @@
 # Default ignored files
 /shelf/
 /workspace.xml
-/myenv/
 myenv/
 models/
 data/raw/
-/models/
-/data/raw/
-/data/processed/
 data/processed/
+offload_weights/
