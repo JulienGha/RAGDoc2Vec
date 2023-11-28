@@ -144,10 +144,10 @@ def main(files):
             break
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
-            query_words1 = optimized_query[1].split()
+            query_words1 = optimized_query[1]
             query_vector1 = model.infer_vector(query_words1)
             retrieved_docs1 = retrieve_documents_doc2vec(query_vector1, documents)
-            query_words2 = optimized_query[0].split()
+            query_words2 = optimized_query[0]
             query_vector2 = model.infer_vector(query_words2)
             retrieved_docs2 = retrieve_documents_doc2vec(query_vector2, documents)
         elif model_choice == "bert":
