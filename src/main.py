@@ -144,35 +144,24 @@ def main(files):
             break
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
-            query_words1 = optimized_query[1]
-            query_vector1 = model.infer_vector(query_words1)
-            retrieved_docs1 = retrieve_documents_doc2vec(query_vector1, documents)
-            """query_words2 = optimized_query[0]
-            query_vector2 = model.infer_vector(query_words2)
-            retrieved_docs2 = retrieve_documents_doc2vec(query_vector2, documents)"""
+            query_vector = model.infer_vector(optimized_query)
+            retrieved_docs1 = retrieve_documents_doc2vec(query_vector, documents)
         elif model_choice == "bert":
-            retrieved_docs1 = retrieve_documents_bert(optimized_query[1], encoded_docs, documents)
-            """retrieved_docs2 = retrieve_documents_bert(optimized_query[0], encoded_docs, documents)"""
+            retrieved_docs1 = retrieve_documents_bert(optimized_query, encoded_docs, documents)
         elif model_choice == "faiss":
             return
 
         # Concatenate documents content to form the context for generation
-        context1 = " ".join([content for _, content in retrieved_docs1])
-        print(context1)
-        """context2 = " ".join([content for _, content in retrieved_docs2])
-        print(context2)"""
+        context = " ".join([content for _, content in retrieved_docs1])
+        print(context)
 
         print("Answer without RAG: ")
         response = generate_response("", query)
         print(f"Generated response: {response}")
 
         print("Answer with one query optimization: ")
-        response = generate_response(context1, query)
+        response = generate_response(context, query)
         print(f"Generated response: {response}")
-
-        """print("Answer with 2 query optimization: ")
-        response = generate_response(context2, query)
-        print(f"Generated response: {response}")"""
 
 
 if __name__ == "__main__":
