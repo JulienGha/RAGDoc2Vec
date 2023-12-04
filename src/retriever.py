@@ -2,7 +2,8 @@ import torch
 from transformers import BertTokenizer, BertModel
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import Doc2Vec
-
+from bert import load_bert_model
+import json
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -62,3 +63,16 @@ def retrieve_documents_doc2vec(query_vector, documents, topn=5):
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print(f"The found document are: {related_documents}")
     return related_documents
+
+
+"""with open('../models/bert/last_file.json', 'r') as file:
+    list_doc = json.load(file)
+
+
+list_doc = retrieve_documents_bert("Hallucination refers to the perception of sensory stimuli, such as sights, sounds, "
+                                   "or sensations, that are not present in reality and originate from the mind",
+                                    load_bert_model(), list_doc, topn=5)
+
+for element in list_doc:
+    print(element)"""
+

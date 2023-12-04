@@ -21,10 +21,12 @@ def train_bert_model(documents):
 
     return encoded_docs
 
+
 # Function to save the BERT model's encoded documents
 def save_bert_model(encoded_docs, path="../models/bert/bert_model.pkl"):
     with open(path, "wb") as f:
         pickle.dump(encoded_docs, f)
+
 
 # Function to load the BERT model's encoded documents
 def load_bert_model(path="../models/bert/bert_model.pkl"):

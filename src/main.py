@@ -145,19 +145,19 @@ def main(files):
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
             query_vector = model.infer_vector(optimized_query)
-            retrieved_docs1 = retrieve_documents_doc2vec(query_vector, documents)
+            retrieved_docs = retrieve_documents_doc2vec(query_vector, documents)
         elif model_choice == "bert":
-            retrieved_docs1 = retrieve_documents_bert(optimized_query, encoded_docs, documents)
+            retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
         elif model_choice == "faiss":
             return
 
         # Concatenate documents content to form the context for generation
-        context = " ".join([content for _, content in retrieved_docs1])
+        context = " ".join([content for _, content in retrieved_docs])
         print(context)
 
-        print("Answer without RAG: ")
+        """print("Answer without RAG: ")
         response = generate_response("", query)
-        print(f"Generated response: {response}")
+        print(f"Generated response: {response}")"""
 
         print("Answer with one query optimization: ")
         response = generate_response(context, query)

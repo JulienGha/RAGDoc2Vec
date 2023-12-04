@@ -45,12 +45,12 @@ def prompt_opti(prompt):
     one_answer_text = tokenizer.batch_decode(output_ids)[0]
 
     lines = one_answer_text.strip().split(' <|im_start|> assistant')
-    assistant_response3 = lines[1].replace("\n", "")
+    assistant_response = lines[1].replace("\n", "")
 
-    print(assistant_response3)
+    print(assistant_response)
     print("Step 3/3 over")
 
-    return assistant_response3
+    return assistant_response
 
 
 def generate_response(context, query):
