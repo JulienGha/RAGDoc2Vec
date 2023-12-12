@@ -12,6 +12,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased').to(device)
+    print(query)
 
     # Encoding the query
     encoded_query = tokenizer(query, padding=True, truncation=True, max_length=512, return_tensors='pt').to(device)
@@ -36,13 +37,15 @@ def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
-    print(f"The found document are: {related_documents}")
+    print(f"Found documents: {related_documents}")
     return related_documents
 
 
 # Assume `documents` is a list of strings representing the content of each document
-def retrieve_documents_doc2vec(query_vector, documents, topn=5):
+def retrieve_documents_doc2vec(query, documents, topn=5):
     model = Doc2Vec.load("../models/doc2vec/doc2vec_model.bin")
+    print(query)
+    query_vector = model.infer_vector(query.split())
     doc_vectors = model.dv.vectors
 
     # Move query_vector to GPU
@@ -61,7 +64,7 @@ def retrieve_documents_doc2vec(query_vector, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
-    print(f"The found document are: {related_documents}")
+    print(f"Found documents: {related_documents}")
     return related_documents
 
 

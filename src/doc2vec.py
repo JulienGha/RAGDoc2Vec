@@ -1,5 +1,6 @@
 from gensim.models import Doc2Vec
 
+
 def train_doc2vec(tagged_data):
     # Set the number of workers to utilize multiple CPU cores
     # Adjust `workers` based on the available CPU cores

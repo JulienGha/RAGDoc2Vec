@@ -28,8 +28,8 @@ def main(files):
             # Convert the preprocessed data into a format compatible with the retrieve function
             # Join the words in the TaggedDocument to form the full text of the document
             model_choice = ""
-            while model_choice not in ["doc", "bert", "faiss"]:
-                model_choice = input("Do you want doc2vec, BERT or faiss? (doc/bert/faiss): ").strip().lower()
+            while model_choice not in ["doc", "bert", "cluster"]:
+                model_choice = input("Do you want doc2vec, BERT or cluster? (doc/bert/cluster): ").strip().lower()
                 if model_choice == "doc":
                     print("Training model...")
                     model_path = "../models/doc2vec/doc2vec_model.bin"
@@ -50,15 +50,15 @@ def main(files):
                         json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
                     save_bert_model(encoded_docs)
                     print("Model trained")
-                elif model_choice == "faiss":
+                elif model_choice == "cluster":
                     print("Training model...")
                     create_vector_db()
                     model = "../models/faiss_db"
                     print("Model trained")
         elif train_new_model == "no":
             model_choice = ""
-            while model_choice not in ["doc", "bert", "faiss"]:
-                model_choice = input("Do you want to load doc2vec, BERT or faiss? (doc/bert/faiss): ").strip().lower()
+            while model_choice not in ["doc", "bert", "cluster"]:
+                model_choice = input("Do you want to load doc2vec, BERT or cluster? (doc/bert/cluster): ").strip().lower()
                 if model_choice == "doc":
                     print("Loading model...")
                     model_path = "../models/doc2vec/doc2vec_model.bin"
@@ -83,7 +83,7 @@ def main(files):
                         print("this model doesnt exist, plz train a new one")
                         break
                     print("Model loaded")
-                elif model_choice == "faiss":
+                elif model_choice == "cluster":
                     print("Loading model...")
                     model_path = "../models/faiss_db"
                     if os.path.exists(model_path):
@@ -95,9 +95,9 @@ def main(files):
                     print("Model loaded")
     else:
         model_choice = ""
-        while model_choice not in ["doc", "bert", "faiss"]:
+        while model_choice not in ["doc", "bert", "cluster"]:
             model_choice = input("No file in input, going directly into loading."
-                                 "Do you want to load doc2vec, BERT or faiss? (doc/bert/faiss): ").strip().lower()
+                                 "Do you want to load doc2vec, BERT or cluster? (doc/bert/cluster): ").strip().lower()
             if model_choice == "doc":
                 print("Loading model...")
                 model_path = "../models/doc2vec/doc2vec_model.bin"
@@ -123,7 +123,7 @@ def main(files):
                     print("this model doesnt exist, plz train a new one")
                     break
                 print("Model loaded")
-            elif model_choice == "faiss":
+            elif model_choice == "cluster":
                 print("Loading model...")
                 model_path = "../models/faiss_db"
                 if os.path.exists(model_path):
@@ -144,24 +144,26 @@ def main(files):
             break
         optimized_query = prompt_opti(query)
         if model_choice == "doc":
-            query_vector = model.infer_vector(optimized_query)
-            retrieved_docs = retrieve_documents_doc2vec(query_vector, documents)
+            retrieved_docs_nopo = retrieve_documents_doc2vec(query, documents)
+            retrieved_docs = retrieve_documents_doc2vec(optimized_query, documents)
         elif model_choice == "bert":
+            retrieved_docs_nopo = retrieve_documents_bert(query, encoded_docs, documents)
             retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
-        elif model_choice == "faiss":
+        elif model_choice == "cluster":
             return
 
         # Concatenate documents content to form the context for generation
-        context = " ".join([content for _, content in retrieved_docs])
-        print(context)
+        context_nopo = " ".join([content for _, content in retrieved_docs_nopo])
+        context_opti = " ".join([content for _, content in retrieved_docs])
 
-        """print("Answer without RAG: ")
-        response = generate_response("", query)
-        print(f"Generated response: {response}")"""
+        print("Answer without RAG & no po: ")
+        generate_response("", query)
 
-        print("Answer with one query optimization: ")
-        response = generate_response(context, query)
-        print(f"Generated response: {response}")
+        print("Answer with RAG & no po: ")
+        generate_response(context_nopo, query)
+
+        print("With RAG and optimization: ")
+        generate_response(context_opti, query)
 
 
 if __name__ == "__main__":
