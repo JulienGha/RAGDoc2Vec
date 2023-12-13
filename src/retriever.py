@@ -68,6 +68,30 @@ def retrieve_documents_doc2vec(query, documents, topn=5):
     return related_documents
 
 
+def retrieve_documents_cluster(query_vector, umap_model, kmeans_model, encoded_docs, documents, topn=5):
+    # Find the nearest cluster to the query vector using UMAP
+    nearest_cluster = umap_model.transform([query_vector])
+
+    # Assign the query to the nearest cluster using k-means
+    cluster_assignment = kmeans_model.predict(nearest_cluster)
+
+    # Get indices of documents in the assigned cluster
+    cluster_indices = np.where(kmeans_model.labels_ == cluster_assignment)[0]
+
+    # Calculate cosine similarity between the query vector and documents in the cluster
+    similarities = cosine_similarity([query_vector], encoded_docs[cluster_indices]).flatten()
+
+    # Retrieve topn documents based on similarity
+    topn_indices = similarities.argsort()[-topn:][::-1]
+    topn_indices = cluster_indices[topn_indices]
+
+    # Fetch the actual documents using the indices
+    topn_documents = [(idx, documents[idx]) for idx in topn_indices]
+    print(f"Found top {topn} documents in the assigned cluster: {topn_documents}")
+    return topn_documents
+
+
+
 """with open('../models/bert/last_file.json', 'r') as file:
     list_doc = json.load(file)
 
