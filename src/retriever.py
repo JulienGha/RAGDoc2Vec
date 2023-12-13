@@ -2,6 +2,7 @@ import torch
 from transformers import BertTokenizer, BertModel
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import Doc2Vec
+import numpy as np
 from bert import load_bert_model
 import json
 
@@ -89,7 +90,6 @@ def retrieve_documents_cluster(query_vector, umap_model, kmeans_model, encoded_d
     topn_documents = [(idx, documents[idx]) for idx in topn_indices]
     print(f"Found top {topn} documents in the assigned cluster: {topn_documents}")
     return topn_documents
-
 
 
 """with open('../models/bert/last_file.json', 'r') as file:

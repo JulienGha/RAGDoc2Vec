@@ -34,7 +34,7 @@ def prompt_opti(prompt):
     # Step 3: Answer the query
     system_message = "You will be given a query. Do the following to treat it. " \
                      "1. Identify the question behind this query." \
-                     "2. Answer the question using terms and words that a " \
+                     "2. Answer the question using terms and words in a single sentence that a " \
                      "book talking about the subject might use as well."
     input_text = f"<|im_start|>system\n{system_message}" \
                  f"<|im_end|>\n<|im_start|>user\n" \
@@ -47,8 +47,7 @@ def prompt_opti(prompt):
     lines = one_answer_text.strip().split(' <|im_start|> assistant')
     assistant_response = lines[1].replace("\n", "")
 
-    print(f"Generated response: {assistant_response}")
-    print("Step 3/3 over")
+    print(f"Optimized query: {assistant_response}")
 
     return assistant_response
 
@@ -59,8 +58,8 @@ def generate_response(context, query):
 
     if len(context) > 10:
         system_message = "You will be given a query and a context. Do the following to answer the query: " \
-                         "Answer the query while using your knowledge and back it up using the provided context in 60" \
-                         " words. Don't explicitly that you received a context but you can quotes passages from it."
+                         "Answer the query in 60 words while using your knowledge, if you feel it's relevant, " \
+                         "use the knowledge brought by the context."
 
         input_text = f"<|im_start|>system\n{system_message}" \
                      f"<|im_end|>\n<|im_start|>user\nHere is the query:{query} " \
