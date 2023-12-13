@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 import numpy as np
 import pickle
 from hdbscan import HDBSCAN
+import joblib
 
 
 def encode_documents_bert(documents, model_name='bert-base-uncased'):
@@ -37,6 +38,7 @@ def train_cluster_model(documents, n_clusters=5, algorithm="kmeans"):
     Returns:
     - encoded_docs: The encoded documents.
     - cluster_model: The trained clustering model.
+    - clusters: The cluster assignments for each document.
     """
     if algorithm == "kmeans":
         encoded_docs = reduce_dimensions_umap(encode_documents_bert(documents), n_components=5)
@@ -51,7 +53,21 @@ def train_cluster_model(documents, n_clusters=5, algorithm="kmeans"):
     else:
         raise ValueError("Invalid clustering algorithm. Choose either 'kmeans' or 'hdbscan'.")
 
+    # Save UMAP model
+    umap_model = train_umap_model(encoded_docs, n_components=5)
+    save_umap_model(umap_model, "../models/cluster/umap_model.pkl")
+
     return encoded_docs, cluster_model, clusters
+
+
+def train_umap_model(encoded_docs, n_components=5):
+    reducer = umap.UMAP(n_components=n_components)
+    umap_embeddings = reducer.fit_transform(encoded_docs)
+    return reducer
+
+
+def save_umap_model(umap_model, save_path):
+    joblib.dump(umap_model, save_path)
 
 
 def reduce_dimensions_umap(encoded_docs, n_components=5):
@@ -102,4 +118,3 @@ def load_cluster_model(load_path):
         clusters = pickle.load(f)
 
     return encoded_docs, cluster_model, clusters
-

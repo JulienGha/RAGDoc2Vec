@@ -1,5 +1,5 @@
 import torch
-from transformers import BertTokenizer, BertModel
+from transformers import BertTokenizer, BertModel, DPRReader
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import Doc2Vec
 import numpy as np
@@ -67,6 +67,19 @@ def retrieve_documents_doc2vec(query, documents, topn=5):
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print(f"Found documents: {related_documents}")
     return related_documents
+
+
+def retrieve_documents_dpr(encoded_query, document_embeddings, documents, topn=5):
+    # Calculate similarity between the query and each document
+
+    similarities = [float(encoded_query @ doc_embedding.T) for doc_embedding in document_embeddings]
+
+    # Retrieve topn documents based on similarity
+    topn_indices = sorted(range(len(similarities)), key=lambda i: similarities[i], reverse=True)[:topn]
+    topn_documents = [(idx, documents[idx]) for idx in topn_indices]
+
+    print(f"Found top {topn} documents using DPR: {topn_documents}")
+    return topn_documents
 
 
 def retrieve_documents_cluster(query_vector, umap_model, kmeans_model, encoded_docs, documents, topn=5):
