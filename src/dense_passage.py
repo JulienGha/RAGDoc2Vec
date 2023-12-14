@@ -1,18 +1,73 @@
-from transformers import DPRReader
+from transformers import DPRReader, AdamW, DPRContextEncoder, DPRContextEncoderTokenizer
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import pickle
 import os
 
 
-def train_dpr_model(documents, model_name='facebook/dpr-reader-single-nq-base'):
+class MarginLoss(nn.Module):
+    def __init__(self, margin=0.2):
+        super(MarginLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, anchor, positive, negative):
+        """
+        Compute the triplet loss.
+
+        Args:
+            anchor: Tensor, embeddings for anchor samples.
+            positive: Tensor, embeddings for positive samples.
+            negative: Tensor, embeddings for negative samples.
+
+        Returns:
+            loss: Scalar tensor, the triplet loss.
+        """
+        distance_positive = F.pairwise_distance(anchor, positive)
+        distance_negative = F.pairwise_distance(anchor, negative)
+
+        # Triplet loss function
+        loss = torch.mean(torch.relu(distance_positive - distance_negative + self.margin))
+
+        return loss
+
+
+def train_dpr_model(documents, model_name='facebook/dpr-reader-single-nq-base', epochs=10):
     # Load the pre-trained DPR model
     model = DPRReader.from_pretrained(model_name)
 
-    # Encode each document
-    document_embeddings = [model.encode_passage(doc) for doc in documents]
+    # Load the DPR tokenizer
+    tokenizer = DPRContextEncoderTokenizer.from_pretrained(model_name)
 
-    # You may perform additional training steps here if needed
+    # Define loss function and optimizer
+    loss_fn = MarginLoss()
+    optimizer = AdamW(model.parameters())
 
-    return document_embeddings, model
+    # Prepare training data (format your documents into pairs/triplets)
+    for epoch in range(epochs):
+        for doc in documents:
+            # Access the "words" field in the document info
+            words = doc["words"]
+
+            # Tokenize the document
+            inputs = tokenizer(words, return_tensors="pt", padding=True, truncation=True)
+
+            # Forward pass
+            encoded_docs = model(**inputs)
+
+            # Calculate loss based on your chosen function and data format
+            loss = loss_fn(encoded_docs)
+
+            # Backpropagate and update model parameters
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+    # Save the trained model
+    torch.save(model.state_dict(), 'trained_dpr_model.pt')
+
+    # Return document embeddings and model (if needed for inference)
+    return encoded_docs, model
 
 
 def save_dpr_model(document_embeddings, dpr_model, save_path):

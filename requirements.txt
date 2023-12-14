@@ -18,3 +18,5 @@ torchvision==0.16.1+cu118
 torchaudio==2.1.1+cu118
 umap-learn
 hdbscan
+os
+

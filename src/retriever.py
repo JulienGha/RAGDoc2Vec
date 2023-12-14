@@ -1,19 +1,27 @@
 import torch
-from transformers import BertTokenizer, BertModel, DPRReader
-from sklearn.metrics.pairwise import cosine_similarity
+from transformers import BertTokenizer, BertModel
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from gensim.models import Doc2Vec
 import numpy as np
+import joblib
 from bert import load_bert_model
-import json
+import os
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
+def retrieve_documents_bert(query, documents, topn=5):
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased').to(device)
     print(query)
+    model_path = "../models/bert/bert_model.pkl"
+    if os.path.exists(model_path):
+        # Load an existing model
+        encoded_docs = load_bert_model()
+    else:
+        print("No model saved")
+        return
 
     # Encoding the query
     encoded_query = tokenizer(query, padding=True, truncation=True, max_length=512, return_tensors='pt').to(device)
@@ -21,6 +29,8 @@ def retrieve_documents_bert(query, encoded_docs, documents, topn=5):
         query_output = model(**encoded_query)
     query_vector = query_output.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
 
+    # Convert the list of NumPy arrays to a single NumPy array before creating a PyTorch tensor
+    encoded_docs = np.array(encoded_docs)
     # Move encoded_docs to GPU
     encoded_docs = torch.tensor(encoded_docs).to(device)
 
@@ -63,6 +73,30 @@ def retrieve_documents_doc2vec(query, documents, topn=5):
         surrounding_docs_idx.append(idx)
         if idx < len(documents) - 1:
             surrounding_docs_idx.append(idx + 1)
+    # Fetch the actual documents using the indices
+    related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
+    print(f"Found documents: {related_documents}")
+    return related_documents
+
+
+def retrieve_tfidf(query, documents, topn=5):
+    # Load umap and tf-idf model stored at "../models/tfidf/"
+    vectorizer = joblib.load('../models/tfidf/vectorizer.pkl')
+    model = joblib.load('../models/tfidf/umap_model.sav')
+    doc_vectors = joblib.load('../models/tfidf/doc_vectors.pkl')
+
+    # Turn query into vector using tf-idf, then into a two-dimensional point using umap
+    query_vector = model.transform(vectorizer.transform([query]))
+
+    # Look for similar document using euclidean distance
+    similarities = euclidean_distances(query_vector, doc_vectors).flatten()
+    related_doc_indices = similarities.argsort()[:topn]
+
+    surrounding_docs_idx = []
+    # Fetch the actual documents using the indices
+    for idx in related_doc_indices:
+        surrounding_docs_idx.extend([max(0, idx - 1), idx, min(len(documents) - 1, idx + 1)])
+
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print(f"Found documents: {related_documents}")

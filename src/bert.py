@@ -6,6 +6,12 @@ import pickle
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+# Function to save the BERT model's encoded documents
+def save_bert_model(encoded_docs, path="../models/bert/bert_model.pkl"):
+    with open(path, "wb") as f:
+        pickle.dump(encoded_docs, f)
+
+
 # Function to train a BERT model (for encoding documents)
 def train_bert_model(documents):
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -18,14 +24,8 @@ def train_bert_model(documents):
         with torch.no_grad():
             model_output = model(**encoded_input)
         encoded_docs.append(model_output.last_hidden_state.mean(dim=1).squeeze().cpu().numpy())
-
+    save_bert_model(encoded_docs)
     return encoded_docs
-
-
-# Function to save the BERT model's encoded documents
-def save_bert_model(encoded_docs, path="../models/bert/bert_model.pkl"):
-    with open(path, "wb") as f:
-        pickle.dump(encoded_docs, f)
 
 
 # Function to load the BERT model's encoded documents

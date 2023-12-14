@@ -18,5 +18,7 @@ def train_doc2vec(tagged_data):
                    )
     model.build_vocab(tagged_data)
     model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+    model_path = "../models/doc2vec/doc2vec_model.bin"
+    model.save(model_path)
     return model
 

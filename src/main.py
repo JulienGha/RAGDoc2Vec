@@ -1,10 +1,10 @@
 import json
 from pdf_converter import convert_pdf_into_json
 from preprocess import preprocess_data_pdf_to_json, load_data
-from retriever import retrieve_documents_doc2vec, retrieve_documents_bert, retrieve_documents_dpr
-from dense_passage import train_dpr_model, load_dpr_model, save_dpr_model
+from retriever import retrieve_documents_doc2vec, retrieve_documents_bert, retrieve_tfidf
 from doc2vec import train_doc2vec
-from bert import train_bert_model, save_bert_model, load_bert_model
+from bert import train_bert_model
+from tfidf import train_tfidf
 from language_model import prompt_opti, generate_response
 import os
 
@@ -33,155 +33,128 @@ def main(files):
             # Join the words in the TaggedDocument to form the full text of the document
             model_choice = ""
 
-            while model_choice not in ["doc", "bert", "dpr"]:
-                model_choice = input("Do you want doc2vec, BERT or dpr? (doc/bert/dpr): ").strip().lower()
+            while model_choice not in ["doc", "bert", "tfidf"]:
+                model_choice = input("Do you want doc2vec, BERT or tfidf? (doc/bert/tfidf): ").strip().lower()
 
                 if model_choice == "doc":
                     print("Training model...")
-                    model_path = "../models/doc2vec/doc2vec_model.bin"
 
                     # Create the directory if it doesn't exist
                     os.makedirs('../models/doc2vec', exist_ok=True)
 
+                    # Train the Doc2Vec model
+                    train_doc2vec(list_doc)
+
+                    # Save docs for future use
                     with open('../models/doc2vec/last_file.json', "w") as file_p:
                         json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
 
-                    # Train the Doc2Vec model
-                    model = train_doc2vec(list_doc)
-
-                    # Save the model for future use
-                    model.save(model_path)
                     print("Model trained")
 
                 elif model_choice == "bert":
                     print("Training model...")
 
-                    # Train the BERT model and get encoded documents
-                    documents = [" ".join(doc.words) for doc in list_doc]
-                    encoded_docs = train_bert_model(documents)
-
                     # Create the directory if it doesn't exist
                     os.makedirs('../models/bert', exist_ok=True)
 
-                    # Save the model for future use
+                    # Train the BERT model and get encoded documents
+                    documents = [" ".join(doc.words) for doc in list_doc]
+                    train_bert_model(documents)
+
+                    # Save docs for future use
                     with open('../models/bert/last_file.json', "w") as file_p:
                         json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
 
-                    save_bert_model(encoded_docs)
                     print("Model trained")
 
-                elif model_choice == "dpr":
+                elif model_choice == "tfidf":
                     print("Training model...")
 
-                    # Train the cluster model and get encoded documents
-                    documents = [" ".join(doc.words) for doc in list_doc]
-                    document_embeddings, dpr_model = train_dpr_model(documents)
-
                     # Create the directory if it doesn't exist
-                    os.makedirs('../models/dpr', exist_ok=True)
+                    os.makedirs('../models/tfidf', exist_ok=True)
+
+                    train_tfidf(list_doc)
 
                     # Save the model for future use
-
-                    with open('../models/dpr/last_file.json', "w") as file_p:
+                    with open('../models/tfidf/last_file.json', "w") as file_p:
                         json.dump([{"words": doc.words, "tags": doc.tags} for doc in list_doc], file_p)
-
-                    # Correct function call with all required arguments
-                    save_dpr_model(document_embeddings, dpr_model, "../models/cluster")
 
                     print("Model trained")
 
         elif train_new_model == "no":
             model_choice = ""
 
-            while model_choice not in ["doc", "bert", "dpr"]:
+            while model_choice not in ["doc", "bert", "tfidf"]:
                 model_choice = input(
-                    "Do you want to load doc2vec, BERT or dpr? (doc/bert/dpr): ").strip().lower()
+                    "Do you want to load doc2vec, BERT or tfidf? (doc/bert/tfidf): ").strip().lower()
 
                 if model_choice == "doc":
                     print("Loading model...")
-                    model_path = "../models/doc2vec/doc2vec_model.bin"
-
-                    if os.path.exists(model_path):
+                    if os.path.exists('../models/doc2vec/last_file.json'):
                         # Load an existing model
                         with open('../models/doc2vec/last_file.json', 'r') as file:
                             list_doc = json.load(file)
                     else:
                         print("This model doesn't exist, please train a new one.")
                         break
-
                     print("Model loaded")
 
                 elif model_choice == "bert":
                     print("Loading model...")
-                    model_path = "../models/bert/bert_model.pkl"
-
-                    if os.path.exists(model_path):
+                    if os.path.exists('../models/bert/last_file.json'):
                         # Load an existing model
-                        encoded_docs = load_bert_model()
                         with open('../models/bert/last_file.json', 'r') as file:
                             list_doc = json.load(file)
                     else:
                         print("This model doesn't exist, please train a new one.")
                         break
-
                     print("Model loaded")
 
-                elif model_choice == "dpr":
-                    print("Using Dense Passage Retrieval (DPR)...")
-                    model_path = "../models/dpr_model/"
-
-                    if os.path.exists(model_path):
+                elif model_choice == "tfidf":
+                    if os.path.exists('../models/tfidf/last_file.json'):
                         # Load an existing model
-                        document_embeddings, dpr_model = load_dpr_model(model_path)
+                        with open('../models/tfidf/last_file.json', 'r') as file:
+                            list_doc = json.load(file)
                     else:
                         print("This model doesn't exist, please train a new one.")
                         break
-
                     print("Model loaded")
 
     else:
         model_choice = ""
 
-        while model_choice not in ["doc", "bert", "dpr"]:
+        while model_choice not in ["doc", "bert", "tfidf"]:
             model_choice = input("No file in input, going directly into loading. "
-                                 "Do you want to load doc2vec, BERT or cluster? (doc/bert/dpr): ").strip().lower()
+                                 "Do you want to load doc2vec, BERT or tfidf? (doc/bert/tfidf): ").strip().lower()
 
             if model_choice == "doc":
                 print("Loading model...")
-                model_path = "../models/doc2vec/doc2vec_model.bin"
-
-                if os.path.exists(model_path):
+                if os.path.exists('../models/doc2vec/last_file.json'):
                     # Load an existing model
                     with open('../models/doc2vec/last_file.json', 'r') as file:
                         list_doc = json.load(file)
                 else:
                     print("This model doesn't exist, please train a new one.")
                     break
-
                 print("Model loaded")
 
             elif model_choice == "bert":
                 print("Loading model...")
-                model_path = "../models/bert/bert_model.pkl"
-
-                if os.path.exists(model_path):
+                if os.path.exists('../models/bert/last_file.json'):
                     # Load an existing model
-                    encoded_docs = load_bert_model()
                     with open('../models/bert/last_file.json', 'r') as file:
                         list_doc = json.load(file)
                 else:
                     print("This model doesn't exist, please train a new one.")
                     break
-
                 print("Model loaded")
 
-            elif model_choice == "dpr":
-                print("Using Dense Passage Retrieval (DPR)...")
-                model_path = "../models/dpr_model/"
-
-                if os.path.exists(model_path):
+            elif model_choice == "tfidf":
+                print("Loading Model...")
+                if os.path.exists('../models/tfidf/last_file.json'):
                     # Load an existing model
-                    document_embeddings, dpr_model = load_dpr_model(model_path)
+                    with open('../models/tfidf/last_file.json', 'r') as file:
+                        list_doc = json.load(file)
                 else:
                     print("This model doesn't exist, please train a new one.")
                     break
@@ -206,22 +179,22 @@ def main(files):
             retrieved_docs = retrieve_documents_doc2vec(optimized_query, documents)
 
         elif model_choice == "bert":
-            retrieved_docs_nopo = retrieve_documents_bert(query, encoded_docs, documents)
-            retrieved_docs = retrieve_documents_bert(optimized_query, encoded_docs, documents)
+            retrieved_docs_nopo = retrieve_documents_bert(query, documents)
+            retrieved_docs = retrieve_documents_bert(optimized_query, documents)
 
-        elif model_choice == "dpr":
-            retrieved_docs_nopo = retrieve_documents_dpr(query, document_embeddings, dpr_model, documents)
-            retrieved_docs = retrieve_documents_dpr(optimized_query, document_embeddings, dpr_model, documents)
+        elif model_choice == "tfidf":
+            retrieved_docs_nopo = retrieve_tfidf(query, documents)
+            retrieved_docs = retrieve_tfidf(optimized_query, documents)
 
         # Concatenate documents content to form the context for generation
         context_nopo = " ".join([content for _, content in retrieved_docs_nopo])
         context_opti = " ".join([content for _, content in retrieved_docs])
 
-        """print("Answer without RAG & no po: ")
+        print("Answer without RAG & no po: ")
         generate_response("", query)
 
         print("Answer with RAG & no po: ")
-        generate_response(context_nopo, query)"""
+        generate_response(context_nopo, query)
 
         print("With RAG and optimization: ")
         generate_response(context_opti, query)
