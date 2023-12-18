@@ -6,12 +6,14 @@ import numpy as np
 import joblib
 from bert import load_bert_model
 import os
+import time
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def retrieve_documents_bert(query, documents, topn=5):
+    start_time = time.time()
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased').to(device)
     print(query)
@@ -48,12 +50,14 @@ def retrieve_documents_bert(query, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
+    print("--- %s seconds --- to retrieve bert" % (time.time() - start_time))
     print(f"Found documents: {related_documents}")
     return related_documents
 
 
 # Assume `documents` is a list of strings representing the content of each document
 def retrieve_documents_doc2vec(query, documents, topn=5):
+    start_time = time.time()
     model = Doc2Vec.load("../models/doc2vec/doc2vec_model.bin")
     print(query)
     query_vector = model.infer_vector(query.split())
@@ -75,11 +79,13 @@ def retrieve_documents_doc2vec(query, documents, topn=5):
             surrounding_docs_idx.append(idx + 1)
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
+    print("--- %s seconds --- to retrieve doc" % (time.time() - start_time))
     print(f"Found documents: {related_documents}")
     return related_documents
 
 
 def retrieve_tfidf(query, documents, topn=5):
+    start_time = time.time()
     # Load umap and tf-idf model stored at "../models/tfidf/"
     vectorizer = joblib.load('../models/tfidf/vectorizer.pkl')
     model = joblib.load('../models/tfidf/umap_model.sav')
@@ -99,6 +105,7 @@ def retrieve_tfidf(query, documents, topn=5):
 
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
+    print("--- %s seconds --- to retrieve tfidf" % (time.time() - start_time))
     print(f"Found documents: {related_documents}")
     return related_documents
 
