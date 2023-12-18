@@ -86,13 +86,12 @@ def retrieve_documents_doc2vec(query, documents, topn=5):
 
 def retrieve_tfidf(query, documents, topn=5):
     start_time = time.time()
-    # Load umap and tf-idf model stored at "../models/tfidf/"
+    # Load tf-idf model stored at "../models/tfidf/"
     vectorizer = joblib.load('../models/tfidf/vectorizer.pkl')
-    model = joblib.load('../models/tfidf/umap_model.sav')
     doc_vectors = joblib.load('../models/tfidf/doc_vectors.pkl')
 
-    # Turn query into vector using tf-idf, then into a two-dimensional point using umap
-    query_vector = model.transform(vectorizer.transform([query]))
+    # Turn query into vector using tf-idf
+    query_vector = vectorizer.transform([query])
 
     # Look for similar document using euclidean distance
     similarities = euclidean_distances(query_vector, doc_vectors).flatten()
