@@ -4,23 +4,27 @@ from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from gensim.models import Doc2Vec
 import numpy as np
 import joblib
-from bert import load_bert_model
+from sklearn.preprocessing import normalize
 import os
 import time
+import pickle
+import json
+
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 
 def retrieve_documents_bert(query, documents, topn=5):
     start_time = time.time()
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased').to(device)
-    print(query)
+
     model_path = "../models/bert/bert_model.pkl"
     if os.path.exists(model_path):
         # Load an existing model
-        encoded_docs = load_bert_model()
+        encoded_docs = pickle.load(open(model_path, 'rb'))
     else:
         print("No model saved")
         return
@@ -36,7 +40,7 @@ def retrieve_documents_bert(query, documents, topn=5):
     # Move encoded_docs to GPU
     encoded_docs = torch.tensor(encoded_docs).to(device)
 
-    # Calculating similarities
+    # Calculating similarities using cosine similarity
     similarities = cosine_similarity([query_vector], encoded_docs.cpu()).flatten()
     related_doc_indices = similarities.argsort()[-topn:][::-1]
 
@@ -48,6 +52,7 @@ def retrieve_documents_bert(query, documents, topn=5):
         surrounding_docs_idx.append(idx)
         if idx < len(documents) - 1:
             surrounding_docs_idx.append(idx + 1)
+
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
     print("--- %s seconds --- to retrieve bert" % (time.time() - start_time))
@@ -145,14 +150,14 @@ def retrieve_documents_cluster(query_vector, umap_model, kmeans_model, encoded_d
     return topn_documents
 
 
-"""with open('../models/bert/last_file.json', 'r') as file:
+with open('../models/bert/last_file.json', 'r') as file:
     list_doc = json.load(file)
 
 
+list_doc = retrieve_documents_bert("Define hallucinations",
+                                   list_doc, topn=5)
+
 list_doc = retrieve_documents_bert("Hallucination refers to the perception of sensory stimuli, such as sights, sounds, "
                                    "or sensations, that are not present in reality and originate from the mind",
-                                    load_bert_model(), list_doc, topn=5)
-
-for element in list_doc:
-    print(element)"""
+                                   list_doc, topn=5)
 
