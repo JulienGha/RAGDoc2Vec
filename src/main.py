@@ -201,4 +201,5 @@ def main(files):
 
 
 if __name__ == "__main__":
-    main(["cognitive_neuropsycho_schizo"])
+    main(["cognitive_neuropsycho_schizo", "Prevalence of alcohol use disorders inschizophrenia",
+          "Grandiosity and Guilt Cause Paranoia"])

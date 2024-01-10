@@ -17,6 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def retrieve_documents_bert(query, documents, topn=5):
+    start_time = time.time()
     # Load BERT tokenizer, UMAP model, and document vectors
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased')
@@ -43,6 +44,7 @@ def retrieve_documents_bert(query, documents, topn=5):
 
     # Fetch the actual documents using the indices
     related_documents = [(idx, documents[idx]) for idx in surrounding_docs_idx]
+    print("--- %s seconds --- to retrieve bert" % (time.time() - start_time))
     print(f"Found documents: {related_documents}")
     return related_documents
 
@@ -51,7 +53,6 @@ def retrieve_documents_bert(query, documents, topn=5):
 def retrieve_documents_doc2vec(query, documents, topn=5):
     start_time = time.time()
     model = Doc2Vec.load("../models/doc2vec/doc2vec_model.bin")
-    print(query)
     query_vector = model.infer_vector(query.split())
     doc_vectors = model.dv.vectors
 
