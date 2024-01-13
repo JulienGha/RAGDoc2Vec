@@ -4,7 +4,7 @@
 myenv/
 models/bert/*
 data/raw/*
-data/processed/
+data/processed/*
 offload_weights/
 data/pdf/*
 models/tfidf/*
