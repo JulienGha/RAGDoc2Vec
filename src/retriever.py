@@ -4,12 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from gensim.models import Doc2Vec
 import numpy as np
 import joblib
-import umap
-from sklearn.preprocessing import normalize
-import os
 import time
-import pickle
-import json
 
 
 # Set device to GPU if available, otherwise use CPU

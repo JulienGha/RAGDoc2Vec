@@ -1,12 +1,6 @@
 import json
 import csv
 import PyPDF2
-from nltk import sent_tokenize
-
-
-def ml_based_sentence_segmentation(words):
-    sentences = sent_tokenize(' '.join(words))
-    return sentences
 
 
 def convert_pdf_into_json(file):

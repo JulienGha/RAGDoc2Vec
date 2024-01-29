@@ -3,6 +3,7 @@ import transformers
 import os
 
 if torch.cuda.is_available():
+    torch.cuda.empty_cache()
     torch.set_default_device("cuda")
     print("Running on GPU")
 else:
@@ -31,7 +32,7 @@ print("Language tokenizer loaded successfully!")
 def prompt_opti(prompt):
     """This function optimize our initial prompt into a document that is likely to be found with a similar content"""
 
-    # Step 3: Answer the query
+    print("Generating augmented query")
     system_message = "You will be given a query. Do the following to treat it. " \
                      "1. Identify the question behind this query." \
                      "2. Answer the question using terms and words in a single sentence that a " \
@@ -46,8 +47,9 @@ def prompt_opti(prompt):
 
     lines = one_answer_text.strip().split(' <|im_start|> assistant')
     assistant_response = lines[1].replace("\n", "")
+    assistant_response = assistant_response.replace("</s>", "")
 
-    print(f"Optimized query: {assistant_response}")
+    print(f"Augmented query: {assistant_response}")
 
     return assistant_response
 
@@ -79,5 +81,6 @@ def generate_response(context, query):
 
     lines = answer.strip().split(' <|im_start|> assistant')
     assistant_response = lines[1].replace("\n", "")
+    assistant_response = assistant_response.replace("</s>", "")
     print(f"Generated response: {assistant_response}")
     return assistant_response
