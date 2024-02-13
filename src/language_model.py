@@ -35,7 +35,7 @@ def prompt_opti(prompt):
     print("Generating augmented query")
     system_message = "You will be given a query. Do the following to treat it. " \
                      "1. Identify the question behind this query." \
-                     "2. Answer the question using terms and words in a single sentence that a " \
+                     "2. Answer the question using terms and words in a single sentence of 60 words that a " \
                      "book talking about the subject might use as well."
     input_text = f"<|im_start|>system\n{system_message}" \
                  f"<|im_end|>\n<|im_start|>user\n" \

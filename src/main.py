@@ -9,11 +9,17 @@ from language_model import prompt_opti, generate_response
 import os
 
 
-def main(files):
+def main(pdf_directory, context_size=60):
     train_new_model = ""
+    if not os.path.exists('../data/raw'):
+        os.makedirs('../data/raw')
+    if not os.path.exists('../data/pdf'):
+        os.makedirs('../data/pdf')
+    if not os.path.exists('../models/bert'):
+        os.makedirs('../models/bert')
 
-    # Process documents if files are provided
-    if files:
+    # Process documents in the specified directory
+    if pdf_directory:
         train_new_model = input("Do you want to train a new model? (yes/no): ").strip().lower()
 
         if train_new_model == 'yes':
@@ -21,11 +27,15 @@ def main(files):
             list_files = []
 
             print("Processing files...")
-            for file in files:
-                list_files.append('../data/pdf/' + file + '.pdf')
-                convert_pdf_into_json(file)
-                processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + file + '.json'), file)
-                list_doc.extend(processed_docs)
+            for filename in os.listdir(pdf_directory):
+                if filename.endswith(".pdf"):
+                    file_path = os.path.join(pdf_directory, filename)
+                    list_files.append(file_path)
+                    convert_pdf_into_json(filename, context_size)
+                    filename = filename.replace(".pdf", "")
+                    processed_docs = preprocess_data_pdf_to_json(load_data('../data/raw/' + filename + '.json'),
+                                                                 filename)
+                    list_doc.extend(processed_docs)
 
             print("Files processed...")
 
@@ -201,5 +211,4 @@ def main(files):
 
 
 if __name__ == "__main__":
-    main(["cognitive_neuropsycho_schizo", "Prevalence of alcohol use disorders inschizophrenia",
-          "Grandiosity and Guilt Cause Paranoia"])
+    main("../data/pdf")
